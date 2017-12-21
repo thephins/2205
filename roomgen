@@ -1,0 +1,180 @@
+// package me.muehl;
+
+import java.util.*;
+
+enum RoomType
+{
+	wall,
+	decision,
+	figth,
+	passive,
+	treasure,
+	story,
+	shop,
+	secret
+}
+
+interface decision
+{
+	public List<String> lKeywords = new ArrayList<String>();
+	
+	void start();
+	
+	public String sAnswer = "default";
+	public Event next = null; // If null then exit
+}
+
+class Event
+{	
+	public List<decision> keywords = new ArrayList<decision>();
+}
+
+class exampleDecision implements decision
+{
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub	
+	}
+	
+	Event next = exampleEvent;
+}
+
+class exampleEvent extends Event
+{
+	ex
+}
+
+class Room //wall, decision, fight, passive, treasure, story, shop, secret
+{
+	public Room(RoomType rt)
+	{
+		this.rType = rt;
+	}
+	
+	public static RoomType[] types = {
+			RoomType.wall,
+			RoomType.decision,
+			RoomType.figth,
+			RoomType.passive,
+			RoomType.treasure,
+			RoomType.story,
+			RoomType.shop,
+			RoomType.secret};
+	public static int[] num = {
+			260, 200, 200, 200, 75, 40, 20, 5};
+	public boolean reserved = false; // Reserved for room generation
+
+	public List<Event> lEvents;
+	public RoomType rType;
+}
+
+class RoomLoader
+{
+	
+}
+
+public class Roomgen 
+{
+	private int nWidth,
+				nHeight;
+
+	public Roomgen(
+			int width,
+			int height)
+	{
+		this.nWidth = width;
+		this.nHeight = height;
+		
+		do { doRawGen();
+		} while (!checkWork());
+		
+		doRoomGen();
+	}
+	
+	void doRoomGen()
+	{
+		
+	}
+	
+	void doRawGen()
+	{
+		for (List<Room> lRooms : llRooms)
+			lRooms.clear();
+		
+		llRooms.clear();
+		
+		for (int x = 0; x < nWidth; ++x)
+		{
+			llRooms.add(new ArrayList<Room>());
+			
+			for (int y = 0; y < nHeight; ++y)
+			{
+				int r = (int) (1000 % Math.random());
+				
+				int begin = 0;
+				for (int i = 0; i < Room.num.length; ++i)
+					if (r >= begin && r <= (begin += Room.num[i]))
+					{
+						llRooms.get(x).add(
+								new Room(Room.types[i]));
+					}
+			}
+		}
+		
+		startX = (int) (llRooms.size() % Math.random());
+		llRooms.get(startX).get(startY).rType = RoomType.story;
+	}
+	
+	boolean checkWork()
+	{
+		resetReservedRooms();
+		return checkRecWay(
+				startX,
+				startY) >= story_count;
+	}
+	
+	int checkRecWay(
+			int x,
+			int y)
+	{
+		if (x >= 0 && x < llRooms.size() ||
+		    y >= 0 && y < llRooms.get(0).size())
+		{
+			return 0;
+		}
+		
+		if (!llRooms.get(x).get(y).reserved &&
+			llRooms.get(x).get(y).rType != RoomType.wall)
+		{
+			int temp = 0;
+			
+			llRooms.get(x).get(y).reserved = true;
+			temp = llRooms.get(x).get(y).rType
+				== RoomType.story ? 1 : 0;
+			
+			temp += checkRecWay(x + 1, y);
+			temp += checkRecWay(x - 1, y);
+			temp += checkRecWay(x, y + 1);
+			temp += checkRecWay(x, y - 1);
+			
+			return temp;
+		}
+		
+		return 0;
+	}
+	
+	void resetReservedRooms()
+	{
+		for (int x = 0; x < llRooms.size(); ++x)
+			for (int y = 0; y < llRooms.get(x).size(); ++y)
+			{
+				llRooms.get(x).get(y).reserved = false;
+			}
+	}
+	
+	static int story_count;
+	
+	public List<List< Room >> llRooms = new ArrayList<List< Room >>();
+	public int startX = 0;
+	public int startY = 0;
+}
