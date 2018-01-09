@@ -11,8 +11,6 @@
 //
 // Home page: http://www.source-code.biz/snippets/java/RawConsoleInput
 
-package me.muehl;
-
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
