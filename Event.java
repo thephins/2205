@@ -8,6 +8,7 @@ public class Event {
     private int room_type;
     private Player player;
     private boolean executed;
+    private String safeID;
 
     Event(int room_type, Player player){
         this.isVoid = room_type == 0;
@@ -16,32 +17,36 @@ public class Event {
     }
 
     void execute(){
-        if(!isVoid && !executed){
-            executed = true;
+        if(!isVoid){
             switch (room_type){
                 case 1:
-                    decision();
+                    safe();
                     break;
                 case 2:
-                    fight();
+                    if(!executed) fight();
                     break;
                 case 3:
                     passive();
                     break;
                 case 4:
-                    treasure();
+                    if(!executed) treasure();
                     break;
                 case 5:
-                    story();
+                    if(!executed) story();
                     break;
                 case 6:
                     shop();
                     break;
                 case 7:
-                    secret();
+                    if(!executed) secret();
                     break;
             }
+            executed = true;
         }
+    }
+
+    void charMinigame(){
+
     }
 
     void fight(){
@@ -207,9 +212,50 @@ public class Event {
             printText("Ok.");
         }
     }
-    void decision(){
-        printText("decision");
+    void safe(){
+        if(safeID != null) {
+            for (Safe safe : Main.safes) {
+                if (!safe.isOpen() && !safe.isGenerated()) {
+                    safe.setGenerated(true);
+                    safeID = safe.getId();
+                    _safe(safe);
+                    break;
+                }
+            }
+        } else {
+            for(Safe safe : Main.safes){
+                if(safe.getId().equals(safeID)){
+                    _safe(safe);
+                }
+                break;
+            }
+        }
     }
+
+    void _safe(Safe safe){
+        printText("Hier befindet sich ein Safe mit der ID \"" + safe.getId() + "\"\nMöchtest du einen Code eingeben?");
+        Scanner s = new Scanner(System.in);
+        String input = s.nextLine().toLowerCase(Locale.GERMAN);
+        if (input.contains("ja")) {
+            printText("Code: ", 30, false);
+            if (Integer.parseInt(s.nextLine()) == safe.getCode()) {
+                printText("Du hast den Safe geöffnet!");
+                printText("Du hast " + safe.getMoney() + "$, " + safe.getOxygen() + " an Sauerstoff und " + safe.getMeds() + " Medikament(e) gefunden.");
+                player.setMoney(player.getMoney() + safe.getMoney());
+                player.setOxygen(player.getOxygen() + safe.getOxygen());
+                player.setHealth(player.getHealth() + safe.getMeds() * 48);
+                if (player.getHealth() > 100) {
+                    player.setHealth(100);
+                }
+                safe.setOpen(true);
+            } else {
+                printText("Der Code ist leider falsch!");
+            }
+        } else if (input.contains("nein")) {
+            printText("Ok.");
+        }
+    }
+
     void treasure(){
         int chanceOxygen = ThreadLocalRandom.current().nextInt(0,100);
         int chanceMoney = ThreadLocalRandom.current().nextInt(0,100);
@@ -341,7 +387,24 @@ public class Event {
         printText("Du hast einen geheimen Raum gefunden!");
     }
     void passive(){
-        printText("Du bist in einem leeren Raum.");
+        printText("Du bist in einem scheinbar leeren Raum.");
+        int chanceSafe = ThreadLocalRandom.current().nextInt(0,2);
+        if(safeID != null) {
+            if (chanceSafe == 1) {
+                for (Safe safe : Main.safes) {
+                    if (!safe.isCode_found()) {
+                        safe.setCode_found(true);
+                        _passive(safe);
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (Safe safe : Main.safes){
+                _passive(safe);
+                break;
+            }
+        }
         int chance = ThreadLocalRandom.current().nextInt(0,100);
         if(chance == 99){
             printText("Seltsam. Was war das?");
@@ -354,14 +417,25 @@ public class Event {
             printText("Dein Glück hat sich erhöht!");
         }
     }
+
+    void _passive(Safe safe){
+        printText("An der Wand befindet sich ein Zettel. Möchtest du diesen genauer anschauen?");
+        String input = new Scanner(System.in).nextLine().toLowerCase(Locale.GERMAN);
+        if (input.contains("ja")) {
+            printText("Auf dem Zettel steht:\n\tSafe-ID: " + safe.getId() + "\n\tCode: " + safe.getCode());
+        } else if (input.contains("nein")) {
+            printText("Ok.");
+        }
+    }
+
     public static void cls(){
         for (int i = 0; i < 50; ++i) System.out.println();
     }
     public static void printText(String s){
-        printText(s, 30);
+        printText(s, 30, true);
     }
 
-    public static void printText(String s, int t){
+    public static void printText(String s, int t, boolean newLine){
         for(int i = 0; i < s.length(); i++){
             char c = s.charAt(i);
             System.out.print(c);
@@ -371,6 +445,6 @@ public class Event {
                 } catch (InterruptedException ignored) {}
             }
         }
-        System.out.println();
+        if(newLine) System.out.println();
     }
 }

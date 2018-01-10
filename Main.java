@@ -1,6 +1,4 @@
-import java.util.Locale;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -9,6 +7,7 @@ public class Main {
 
 
     public static boolean game_over = false;
+    public static List<Safe> safes = new ArrayList<>();
 
     Room[][] rooms = new Room[width+1][height+1];
 
@@ -16,7 +15,7 @@ public class Main {
 
     private void ini(){
         Random random = new Random();
-        //0 = wall, 1 = decision, 2 = fight, 3 = passive, 4 = treasure, 5 = story, 6 = shop, 7 = secret
+        //0 = wall, 1 = safe, 2 = fight, 3 = passive, 4 = treasure, 5 = story, 6 = shop, 7 = secret
         for(int i = 0; i <= width; i++){
             for(int j = 0; j <= height; j++){
                 int r = random.nextInt(1001);
@@ -25,6 +24,7 @@ public class Main {
                     type = 0;
                 } else if(r <= 460){
                     type = 1;
+                    safes.add(new Safe());
                 } else if(r <= 660){
                     type = 2;
                 } else if(r <= 860){
