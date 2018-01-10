@@ -257,24 +257,44 @@ public class Event {
     }
 
     void treasure(){
+        // 1. bit = oxygen
+        // 2. bit = money
+        // 3. bit = weapon
+        // 4. bit = Lucky charm
+        byte treasure = 0;
+        treasure |= ThreadLocalRandom.current().nextInt(0, 4) == 0 ? 1 : 0;
+        treasure |= ThreadLocalRandom.current().nextInt(0, 4) == 0 ? 2 : 0;
+        treasure |= ThreadLocalRandom.current().nextInt(0, 4) == 0 ? 4 : 0;
+        treasure |= ThreadLocalRandom.current().nextInt(0, 4) == 0 ? 8 : 0;
+
+        if (treasure == 0)
+        {
+            treasure |= (byte) Math.pow(2,
+                    ThreadLocalRandom.current().nextInt(0, 3));
+        }
+        
         int chanceOxygen = ThreadLocalRandom.current().nextInt(0,100);
         int chanceMoney = ThreadLocalRandom.current().nextInt(0,100);
         int chanceWeapon = ThreadLocalRandom.current().nextInt(0,100);
         int chanceLuckyCharm = ThreadLocalRandom.current().nextInt(0,100);
-        if(chanceOxygen >= 0 && chanceOxygen <= 80){
+        
+        if((treasure & 1) != 0 && chanceOxygen >= 0 && chanceOxygen <= 80){
             printText("Du hast hier Sauerstoff gefunden!");
             player.setOxygen(player.getOxygen() + 1000);
         }
-        if(chanceMoney >= 0 && chanceMoney <= 75){
+
+        if((treasure & 2) != 0 && chanceMoney >= 0 && chanceMoney <= 75){
             int money = 20 * player.getLuck();
             printText("Du hast hier " + money + "$ gefunden!");
             player.setMoney(player.getMoney() + money);
         }
-        if((chanceWeapon >= 0 && chanceWeapon <= 50) && !player.isWeapon()){
+
+        if((treasure & 4) != 0 && (chanceWeapon >= 0 && chanceWeapon <= 50) && !player.isWeapon()){
             printText("Du hast hier eine Waffe gefunden!");
             player.setWeapon(true);
         }
-        if(chanceLuckyCharm >= 0 && chanceLuckyCharm <= 35){
+
+        if((treasure & 8) != 0 && chanceLuckyCharm >= 0 && chanceLuckyCharm <= 35){
             printText("Du hast hier einen Glücksbringer gefunden!");
             player.setLuck(player.getLuck() + 25);
         }
