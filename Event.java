@@ -56,23 +56,14 @@ public class Event {
         }
     }
 
-    void charMinigame() throws IOException, InterruptedException {
-        printText("Drücke G, wenn beide Buchstaben gleich sind.");
+    void charMinigame() {
         boolean correct = false;
-        while (RawConsoleInput.read(false) != 'g' && !correct){
+        while (!correct){
             String key1 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
             String key2 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
-            printText(key1 + " " + key2);
-            Thread.sleep(100);
+            String key3 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
+            System.out.print(key1 + " " + key2 + "" + key3);
             correct = key1.equals(key2);
-            cls();
-        }
-        if(correct){
-            printText("Du hast den Typhon getötet!");
-        } else {
-            player.setHealth(player.getHealth() - 15);
-            printText("Typhon hat dich attackiert!");
-            charMinigame();
         }
     }
 
@@ -108,6 +99,7 @@ public class Event {
     }
 
     void fight(){
+        player.setOxygen(player.getOxygen() - 20);
         int enemyType = ThreadLocalRandom.current().nextInt(0,100);
         if(enemyType >= 0 && enemyType <= 70){//Typhon
             typhon(3, 1500);
@@ -127,11 +119,7 @@ public class Event {
                         long t2 = System.currentTimeMillis();
                         if((t2 - t1) < 1500){
                             printText("Du konntest dem Typhon schaden!");
-                            try {
-                                charMinigame();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            charMinigame();
                             printText("Mit dem Deaktivierungscode des Raumanzuges kannst du den Typhon entgültig eliminieren");
                             cls();
                             printText("Bitte hier eingeben: ");
@@ -335,6 +323,7 @@ public class Event {
         }
     }
     void story(){
+        player.setOxygen(player.getOxygen() - 50);
         int chapter = player.getStory_chapter();
         player.setStory_chapter(chapter + 1);
         Scanner s = new Scanner(System.in);
@@ -352,7 +341,7 @@ public class Event {
                     printText("Die Mission war es durch einen Hyperschlaf mehrere Jahre in die Zukunft zu reisen ohne zu altern um einen langwierigen Forschungsprozess zu überspringen.\n" +
                             "Während des Schlafens soll ein Programm den Forschungsprozess automatisieren.");
                 } else if(input.contains("forschung")){
-                    printText("Die Erforschung einer neuen Lebensform, die Typhon. Normalerweise dauert die Analyse des Gewebes einer Lebensform nur ein bis zwei Tage doch das Gewebe der Typhon ist viel komplexer und erfordert daher mehrere Fachgebiete zum Analysieren was die Forschung auf mehrere Jahre strecken könnte. Viel zu viele Jahre... …dafür war keine Zeit.");
+                    printText("Die Erforschung einer neuen Lebensform, die Typhon. Normalerweise dauert die Analyse des Gewebes einer Lebensform nur ein bis zwei Tage doch das Gewebe der Typhon ist viel komplexer und erfordert daher mehrere Fachgebiete zum Analysieren was die Forschung auf mehrere Jahre strecken könnte. Viel zu viele Jahre...dafür war keine Zeit.");
                 } else if(input.contains("schlaf")){
                     printText("Du schaust dir deine Hyperschlaf-Kapsel genauer an. Ein Fehler! Du bist 100 Jahre zu früh aufgewacht! Geplant war das Jahr 2205 doch du bist im Jahr 2105 aufgewacht. 2032 war das Jahr in dem sich alle in den Hyperschlaf gestürzt haben.");
                 } else if(input.contains("gehe") && input.contains("schlaf")){
@@ -360,7 +349,7 @@ public class Event {
                 } else if(input.contains("aufwecken")){
                     printText("Dir ist der Fehler Unbekannt. Du möchtest nicht riskieren das der gleiche Fehler auch bei deinen Team Kollegen auftritt und du jemanden mit in deine Situation hinein ziehst.");
                 } else if(input.contains("raus")){
-                    printText("Du entscheidest dich aus dem Hyperschlaf-Raum raus zugehen. Du öffnest die Tür und kannst deinen Augen nicht glauben. Alles verwüstet überall schwarze Spuren an den Wänden wie du sie eigentlich nur aus der Typhon Forschung kennst... ...sind die Typhon ausgebrochen? Auf einem Informations-Bildschirm erkennst du das es ebenfalls das überall   \n" +
+                    printText("Du entscheidest dich aus dem Hyperschlaf-Raum raus zugehen. Du öffnest die Tür und kannst deinen Augen nicht glauben. Alles verwüstet überall schwarze Spuren an den Wänden wie du sie eigentlich nur aus der Typhon Forschung kennst...sind die Typhon ausgebrochen? Auf einem Informations-Bildschirm erkennst du das es ebenfalls das überall   \n" +
                             "auf der Talos-1 Sauerstoff Lecks gibt du ziehst dir einen Raumanzug an dessen Sauerstoff-Versorgung noch 75% beträgt. Ebenfalls nimmst du vorerst als temporäre Bewaffnung eine Rohrzange die auf dem Boden zwischen den Trümmern herum lag.\n" +
                             "Der Raumanzug gibt ebenfalls Informationen über deinen Gesundheitlichen Status aus:\n" +
                             "Gesundheit = 100% | Krankheiten = Keine\n\n" +
@@ -431,6 +420,7 @@ public class Event {
                                             "\tDein Neues Ziel: Das Shuttle finden um zur Erde zu fliegen und darüber zu Informieren was hier vor sich geht. Und noch während du den Raum verlässt, hat sie dich auf Spanisch auf 10 verschiedene Arten beleidigt.");
                                 }
                                 room_complete = true;
+                                chapter_complete = true;
                             } else {
                                 printText("Vielleicht solltest du dich lieber erst über sie Informieren...\nDu weißt nicht, wen du vor dir hast.");
                             }

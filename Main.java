@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Main {
 
@@ -46,15 +47,29 @@ public class Main {
 
     private boolean isMapOk(){
         int story_counter = 0;
-        for (int i = 0; i < width; i++){
-            for(int j = 0; j < height; j++){
-                if(rooms[i][j].getType() == 5){
-                    story_counter++;
-                }
-                return !(i > 0 && rooms[i-1][j].getType() == 0 && i < width && rooms[i+1][j].getType() == 0 && j > 0 && rooms[i][j-1].getType() == 0 && j < height && rooms[i][j+1].getType() == 0);
+        int posX = 0;
+        int posY = 0;
+        List<String> ids = new ArrayList<>();
+        int i = 0;
+        while (story_counter < 4){
+            if((rooms[posX][posY].getType() == 5) && !(ids.contains(rooms[posX][posY].getId()))) {
+                ids.add(rooms[posX][posY].getId());
+                story_counter++;
             }
+            int r = ThreadLocalRandom.current().nextInt(0,4);
+            if(posY < height && rooms[posX][posY+1].getName().equals("Tür") && r == 0){
+                posY++;
+            } else if(posX > 0 && rooms[posX-1][posY].getName().equals("Tür") && r == 1){
+                posX--;
+            } else if(posX < width && rooms[posX+1][posY].getName().equals("Tür") && r == 2){
+                posX++;
+            } else if(posY > 0 && rooms[posX][posY-1].getName().equals("Tür") && r == 3){
+                posY--;
+            }
+            if(i > 1000) return false;
+            i++;
         }
-        return story_counter >= 4;
+        return true;
     }
 
     private void printRooms(Player p){
@@ -96,7 +111,7 @@ public class Main {
                 s = "Nur eine normale Wand.";
                 break;
         }
-        System.out.println(s);
+        Event.printText(s);
     }
 
     private Main(){
@@ -107,14 +122,24 @@ public class Main {
 
         rooms[0][0].getEvent().execute();
 
+        Event.printText("Du kannst dich ab sofort frei auf der Map bewegen. Und Übrigens: Wände sind nicht immer Wände ;)");
+
         while (!game_over)
         {
+
+            if(player.getHealth() <= 0 || player.getOxygen() <= 0){
+                game_over = true;
+                break;
+            }
+
             int x, y;
             String input;
+            Event.cls();
+            System.out.println("Aktueller Sauerstoffgehalt: " + player.getOxygen());
             printRooms(player);
 
             do {
-                System.out.print("Wohin möchtest du gehen? ");
+                Event.printText("Wohin möchtest du gehen? ", 30, false);
 
                 input = s.nextLine().toLowerCase(Locale.GERMAN);
                 x = player.getPos_x();
@@ -140,7 +165,7 @@ public class Main {
                 } else {
                     movementError();
                 }
-            } else if(input.contains("vor")){
+            } else if(input.contains("vor") || input.contains("geradeaus")){
                 if(check(x, y+1)) {
                     player.setPos_y(y + 1);
                 } else {
@@ -155,7 +180,7 @@ public class Main {
             } else {
                 System.out.println("Das habe ich nicht verstanden..");
             }
-
+            player.setOxygen(player.getOxygen() - 10);
             rooms[player.getPos_x()][player.getPos_y()].getEvent().execute();
         }
     }

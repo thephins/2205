@@ -2,7 +2,6 @@ public class Player {
     private int pos_x = 0;
     private int pos_y = 0;
     private int luck = 1,
-            hitpoints = 100,
             money = 0,
             health = 100,
             oxygen = 1000;
@@ -33,14 +32,6 @@ public class Player {
 
     public void setLuck(int luck) {
         this.luck = luck;
-    }
-
-    public int getHitpoints() {
-        return hitpoints;
-    }
-
-    public void setHitpoints(int hitpoints) {
-        this.hitpoints = hitpoints;
     }
 
     public int getMoney() {

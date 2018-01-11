@@ -17,8 +17,6 @@ public class Debug
                 return Integer.toString(player.getLuck());
             case "get_story":
                 return Integer.toString(player.getStory_chapter());
-            case "get_hitpoints":
-                return Integer.toString(player.getHitpoints());
             case "get_secrets":
             {
                 StringBuilder sb = new StringBuilder();
