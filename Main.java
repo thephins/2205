@@ -54,7 +54,7 @@ public class Main {
                 return !(i > 0 && rooms[i-1][j].getType() == 0 && i < width && rooms[i+1][j].getType() == 0 && j > 0 && rooms[i][j-1].getType() == 0 && j < height && rooms[i][j+1].getType() == 0);
             }
         }
-        return story_counter >= 3;
+        return story_counter >= 4;
     }
 
     private void printRooms(Player p){
@@ -105,8 +105,7 @@ public class Main {
             ini();
         Scanner s = new Scanner(System.in);
 
-        if (false)
-            rooms[0][0].getEvent().execute();
+        rooms[0][0].getEvent().execute();
 
         while (!game_over)
         {

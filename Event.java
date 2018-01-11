@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
@@ -36,7 +37,7 @@ public class Event {
                     if(!executed) fight();
                     break;
                 case 3:
-                    passive();
+                    if(!executed) passive();
                     break;
                 case 4:
                     if(!executed) treasure();
@@ -55,44 +56,63 @@ public class Event {
         }
     }
 
-    void charMinigame(){
-
+    void charMinigame() throws IOException, InterruptedException {
+        printText("Drücke G, wenn beide Buchstaben gleich sind.");
+        boolean correct = false;
+        while (RawConsoleInput.read(false) != 'g' && !correct){
+            String key1 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
+            String key2 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
+            printText(key1 + " " + key2);
+            Thread.sleep(100);
+            correct = key1.equals(key2);
+            cls();
+        }
+        if(correct){
+            printText("Du hast den Typhon getötet!");
+        } else {
+            player.setHealth(player.getHealth() - 15);
+            printText("Typhon hat dich attackiert!");
+            charMinigame();
+        }
     }
 
-    void fight(){
-        int enemyType = ThreadLocalRandom.current().nextInt(0,100);
-        if(enemyType >= 0 && enemyType <= 70){//Typhone
-            printText("ACHTUNG! Du befindest dich in einem Raum mit Typhone!");
-            for (int i = 0; i < 3;){
-                char key = (char) ThreadLocalRandom.current().nextInt(97,123);
-                char capKey = (char) (key - 32);
+    void typhon(int n, int ms){
+        printText("ACHTUNG! Du befindest dich in einem Raum mit einem Typhon!");
+        for (int i = 0; i < n;){
+            char key = (char) ThreadLocalRandom.current().nextInt(97,123);
+            char capKey = (char) (key - 32);
 
-                printText("Drücke schnell " + key);
-                try {
-                    long t1 = System.currentTimeMillis();
-                    char input = (char) RawConsoleInput.read(true);
-                    if(input == key || input == capKey){
-                        long t2 = System.currentTimeMillis();
-                        if((t2 - t1) < 2000){
-                            i++;
-                            printText("Du konntest dem Typhon schaden!");
-                        } else {
-                            player.setHealth(player.getHealth() - 15);
-                            printText("Typhon hat dich attackiert!");
-                        }
+            printText("Drücke schnell " + key);
+            try {
+                long t1 = System.currentTimeMillis();
+                char input = (char) RawConsoleInput.read(true);
+                if(input == key || input == capKey){
+                    long t2 = System.currentTimeMillis();
+                    if((t2 - t1) < ms){
+                        i++;
+                        printText("Du konntest dem Typhon schaden!");
                     } else {
                         player.setHealth(player.getHealth() - 15);
                         printText("Typhon hat dich attackiert!");
                     }
-                    RawConsoleInput.resetConsoleMode();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } else {
+                    player.setHealth(player.getHealth() - 15);
+                    printText("Typhon hat dich attackiert!");
                 }
+                RawConsoleInput.resetConsoleMode();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            printText("Du hast den Typhon getötet!");
+        }
+        printText("Du hast den Typhon getötet!");
+    }
+
+    void fight(){
+        int enemyType = ThreadLocalRandom.current().nextInt(0,100);
+        if(enemyType >= 0 && enemyType <= 70){//Typhon
+            typhon(3, 1500);
         } else if(enemyType > 70 && enemyType <= 90){//Typhone mit Raumanzug
             printText("ACHTUNG! Du befindest dich in einem Raum mit einem Typhon mit Raumanzug!");
-            if(player.isWeapon()){
                 int number = ThreadLocalRandom.current().nextInt(1000,100000);
                 printText("Merke dir folgenden Deaktivierungscode: " + number);
                 printText("");
@@ -107,6 +127,11 @@ public class Event {
                         long t2 = System.currentTimeMillis();
                         if((t2 - t1) < 1500){
                             printText("Du konntest dem Typhon schaden!");
+                            try {
+                                charMinigame();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                             printText("Mit dem Deaktivierungscode des Raumanzuges kannst du den Typhon entgültig eliminieren");
                             cls();
                             printText("Bitte hier eingeben: ");
@@ -125,7 +150,7 @@ public class Event {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
+
         } else {//Typhone mit Waffe
             printText("Hier befindet sich ein Typhon mit Waffe. Möchtest du fliehen oder kämpfen?");
             Scanner s = new Scanner(System.in);
@@ -136,7 +161,7 @@ public class Event {
                     printText("Deine Chancen standen gut. Du konntest den Typhon erfolgreich eliminieren.");
                     int money_found = ThreadLocalRandom.current().nextInt(0,1000);
                     printText("Der Typhon hatte " + money_found + "$, eine Sauerstoffflasche und eine Waffe.");
-                    System.out.print("Möchtest du die Gegenstände mitnehmen? ");
+                    printText("Möchtest du die Gegenstände mitnehmen? ", 30, false);
                     String input_objects = s.nextLine().toLowerCase(Locale.GERMAN);
                     if(input_objects.contains("ja")){
                         player.setMoney(player.getMoney() + money_found);
@@ -157,10 +182,10 @@ public class Event {
     void shop(){
         printText("Vor dir befindet sich ein Automat.");
         printText("Es gibt hier noch Sauerstoffflaschen, Snacks, Medikamente, Waffen, Glücksbringer und Rüstungen.");
-        System.out.print("Du hast aktuell " + player.getMoney() + "$. Möchtest du etwas kaufen? ");
+        printText("Du hast aktuell " + player.getMoney() + "$. Möchtest du etwas kaufen? ", 30, false);
         Scanner s = new Scanner(System.in);
         if(s.nextLine().toLowerCase(Locale.GERMAN).contains("ja")){
-            System.out.print("Was darf es denn sein? ");
+            printText("Was darf es denn sein? ", 30, false);
             String input = s.nextLine().toLowerCase(Locale.GERMAN);
             String nem = "Nicht genug Geld!";
             if(input.contains("sauerstoff")){
@@ -319,7 +344,7 @@ public class Event {
                     "Alle deine Team Kollegen befinden sich noch im Hyperschlaf. Aber wieso...");
             boolean chapter_complete = false;
             while (!chapter_complete){
-                System.out.print("Was möchtest du tun/wissen? ");
+                printText("Was möchtest du tun/wissen? ", 30, false);
                 String input = s.nextLine().toLowerCase(Locale.GERMAN);
                 if(input.contains("ich")){
                     printText("Du arbeitest hier mit den besten Wissenschaftlern der Erde zusammen, du bist einer von ihnen, ein hochbegabter Physiker und Techniker. Dein Name: Morgan.\n");
@@ -354,7 +379,7 @@ public class Event {
                     "Es ist unmöglich durch dieses Feld irgendetwas zu erkennen.");
             boolean chapter_complete = false;
             while(!chapter_complete){
-                System.out.print("Was möchtest du tun/wissen? ");
+                printText("Was möchtest du tun/wissen? ", 30, false);
                 String input = s.nextLine().toLowerCase(Locale.GERMAN);
                 if(input.contains("code")){
                     printText("Der Code lautet 2-4-1-6.");
@@ -366,18 +391,18 @@ public class Event {
                     boolean room_complete = false;
                     boolean has_informations = false;
                     while (!room_complete){
-                        System.out.print("Was möchtest du tun/wissen? ");
-                        String input_room = s.nextLine().toLowerCase(Locale.GERMAN);
+                        printText("Was möchtest du tun/wissen? ", 30, false);
+                        String input_room = Normalizer.normalize(s.nextLine().toLowerCase(Locale.GERMAN), Normalizer.Form.NFKC);
                         if(input_room.contains("person")){
                             printText("Anhand der Uniform lässt sich erkennen das sie zu den Volontären auf der Talos-1 gehört.\n" +
                                     "Sie scheint ansprechbar zu sein und anhand eines Terminals und ihrer Volontär ID, \n" +
                                     "die auf ihrem Anzug erkennbar ist, ist es möglich mehr über sie heraus zu finden.");
-                        } else if(input.contains("volontär")){
+                        } else if(input_room.contains("volontär")){
                             printText("Volontäre, sind Freiwillige die ihren Körper für die Versuche und Experimente auf der Talos-1 zur Verfügung gestellt haben, ...also so etwas wie Laborratten.\n" +
                                     "Meistens handelt es sich um Strafgefangene die ihr Leben sowieso lebenslänglich im Gefängnis verbracht hätten.");
-                        } else if(input.contains("id") || input.contains("genau")){
+                        } else if(input_room.contains("id") || input_room.contains("genau")){
                             printText("Auf der Uniform steht die ID: V-010655-37");
-                        } else if(input.contains("terminal") && input.contains("V-010655-37")){
+                        } else if(input_room.contains("terminal") && input_room.contains("v-010655-37")){
                             printText("Name: Olivia\n" +
                                     "Nachname: Colomar\n" +
                                     "Straftat: Versuchter Hackerangriff auf die größte Bank der Welt.\n" +
@@ -386,23 +411,26 @@ public class Event {
                                     "\t\tDatendiebstahl an mehreren Millionen Personen.\n" +
                                     "Warnung:  keine Technischen Geräte im Radius von 10m vom Testsubjekt aufbewahren.");
                             has_informations = true;
-                        } else if(input.contains("reden")){
+                        } else if(input_room.contains("reden")){
                             if(has_informations){
-                                printText("Olivia: \t„Ich schätze du weißt schon, anhand meiner Akten, wer ich bin.\n" +
+                                printText("Olivia: \t\"Ich schätze du weißt schon, anhand meiner Akten, wer ich bin.\n" +
                                         "\t\tIch wurde ebenfalls in den Hyperschlaf versetzt. Du wunderst dich, wieso ich auch schon wach bin.\nBevor man mich Schlafen lies hatte ich genug Zeit mich in ein anderes Terminal zu hacken und meine Schlafdauer zu verkürzen.\nNur leider ist mein Umgang mit Waffen miserabel und ich habe mich in\n" +
                                         "\t\teiner dieser Energie-Draht-Fallen selbst gefangen. Ich hatte eigentlich vor, mit einem Shuttle zu fliehen, aber bemerkte schon früh, dass ich die Sicherheitssystem-Software und das Kommunikationssystem\n" +
                                         "\t\tmit meinen Softwaremanipulationen zerschossen habe und damit eure Forschungssubjekte befreit habe. Ich habe dich ebenfalls aus dem Hyperschlaf geweckt und dir die richtigen Türen geöffnet damit du zu " +
                                         "\t\tmir kommst und mich befreist. Ich habe den Doktor dieser Raumstation dabei beobachtet mit welchen Code er die Tür zur Krankenstation öffnet und soweit ich weiß, ist der Operationstisch fähig einen Hyperschlaf\n" +
-                                        "\t\tdurchzuführen. Wenn du mich befreist und hilfst zum Shuttle zu kommen und zu fliehen verrate ich dir den Code.“");
-                                System.out.print("Olivia Colomar befreien? ");
+                                        "\t\tdurchzuführen. Wenn du mich befreist und hilfst zum Shuttle zu kommen und zu fliehen verrate ich dir den Code.\"");
+                                printText("Olivia Colomar befreien? ", 30, false);
                                 String input_room_decision = s.nextLine().toLowerCase(Locale.GERMAN);
                                 if(input_room_decision.contains("ja")){
+                                    player.setDecision(true);
                                     printText("Du befreist Olivia. Sie bedankt sich sehr und sagt das du es nicht bereuen wirst.\n" +
                                             "Sie öffnet auf ihrem Laptop einen Karte und berechnet den kürzesten Weg zum Shuttle und öffnet dir die richtigen Türen.\n");
                                 } else if(input_room_decision.contains("nein")){
+                                    player.setDecision(false);
                                     printText("Du reißt Olivia ihr Laptop aus der Hand, wirfst ihn gegen eine Wand, nachdem du dir eine Karte über die Raumstation heruntergeladen hast und lässt sie am Boden gefesselt liegen.\n" +
                                             "\tDein Neues Ziel: Das Shuttle finden um zur Erde zu fliegen und darüber zu Informieren was hier vor sich geht. Und noch während du den Raum verlässt, hat sie dich auf Spanisch auf 10 verschiedene Arten beleidigt.");
                                 }
+                                room_complete = true;
                             } else {
                                 printText("Vielleicht solltest du dich lieber erst über sie Informieren...\nDu weißt nicht, wen du vor dir hast.");
                             }
@@ -411,6 +439,140 @@ public class Event {
                 }
             }
 
+        } else if(chapter == 2){
+            if(player.isDecision()) {
+                printText("Ihr seid im Shuttle-Raum angekommen, doch es ist voll mit Typhons und es hat nicht lange gedauert bis sie euch entdeckt haben.");
+                typhon(9, 1500);
+                printText("Ihr habt es geschafft! Die meisten Typhons im Shuttle-Raum wurden besiegt. Und die, die noch übrig waren sind vor Angst geflohen.");
+            } else {
+                printText("Du bist im Shuttle-Raum angekommen doch drinnen ist ein riesiger Typhon-Phantom, es hat nicht lange gedauert bis er dich bemerkt hat und auf dich zu stürmt. Du konntest den Ansturm noch grade so ausweichen. Es führt kein weg an ihn vorbei du musst kämpfen.");
+                typhon(9, 1200);
+                printText("Du hast es geschafft! Als du den riesigen Typhon-Phantom besiegt hast und er sich vor dir vor schmerzen krümmend in Luft auflöst, fliehen die restlichen Typhons die noch im Raum waren vor angst. Dir steht der Shuttle-Raum jetzt frei zur Verfügung.");
+            }
+
+                boolean chapter_complete = false;
+                boolean cmd_active = false;
+                while(!chapter_complete) {
+                    printText("Was möchtest du tun/wissen? ", 30, false);
+                    String input = s.nextLine().toLowerCase(Locale.GERMAN);
+                    if(input.contains("umsehen")){
+                        if(player.isDecision()) {
+                            printText("Ein riesiger Raum, so groß das drei Shuttle 's gleichzeitig in ihm Platz nehmen könnten, doch bereit stand nur ein Shuttle. Auf dem Shuttle steht gedruckt: „SHUTTLE-ADVENT“.\n" +
+                                    "Vor dem Raumschiff befindet sich ein gigantisches und rundes Tor das ihr auf jeden Fall öffnen müsst aber vorher müsst ihr ein paar Bedingungen erfüllen. \n" +
+                                    "Neben dir steht Olivia Colomar, sie lächelt dich die meiste Zeit an, es wirkt vertraulich aber, gleichzeitig so vertraulich das es wieder nicht vertraulich wirkt.\n" +
+                                    "Ihr befindet euch zurzeit im Kontroll-Bereich des Shuttle-Raums.\n" +
+                                    "Eine große Schaltfläche befindet sich vor euch. Und ein Notizzettel klebt neben dran.");
+                        } else {
+                            printText("Ein riesiger Raum, so groß das drei Shuttle 's gleichzeitig in ihm Platz nehmen könnten, doch bereit stand nur ein Shuttle. Auf dem Shuttle steht gedruckt: „SHUTTLE-ADVENT“.\n" +
+                                    "Vor dem Raumschiff befindet sich ein gigantisches und rundes Tor das du auf jeden Fall öffnen müsst aber vorher musst du ein paar Bedingungen erfüllen. \n" +
+                                    "Du befindest dich zurzeit im Kontroll-Bereich des Shuttle-Raums.\n" +
+                                    "Eine große Schaltfläche befindet sich vor dir. Und ein Notizzettel klebt neben dran.");
+                        }
+                    } else if(input.contains("shuttle")){
+                        printText("Das Schiff ist eindeutig einwandfrei, doch nicht erreichbar da die Brücke noch eingefahren ist.");
+                    } else if(input.contains("tor")){
+                        printText("Das Tor muss auf jeden Fall geöffnet werden, dies ist bestimmt mit der Schaltfläche möglich.");
+                    } else if(input.contains("notiz") || input.contains("zettel")){
+                        printText("Auf dem Notizzettel steht geschrieben:\n" +
+                                "\t\"1. Brücke herunterfahren \n" +
+                                "\t 2. Shuttle-Tür öffnen \n" +
+                                "\t 3. Vakuum aktivieren\n" +
+                                "\t 4. Tor öffnen\n" +
+                                "\t 5. Start-Schiene ausfahren\n" +
+                                "\t 6. Shuttle Starten\"");
+                    } else if(input.contains("schaltfläche")){
+                        printText("auf dem „Looking-Glass“ der Schaltfläche steht:\n" +
+                                "\tKonsole: \"Bitte geben sie den Namen des Shuttle's ein das sie anwählen möchten.\"");
+                    } else if(input.contains("advent")){
+                        cmd_active = true;
+                        printText("Konsole: „Shuttle wurde gefunden und ausgewählt.“\n" +
+                                "Es stehen dir nun verschiedene Befehle auf der Schaltfläche zur Verfügung:\n" +
+                                "\t[Vakuum aktivieren]\n" +
+                                "\t[Brücke herunterfahren]\n" +
+                                "\t[Start-Schiene ausfahren]\n" +
+                                "\t[Tor öffnen]\n" +
+                                "\t[Shuttle-Tür öffnen]\n" +
+                                "\t[Shuttle Starten]");
+                    } else if(input.contains("brücke herunterfahren") && cmd_active){
+                        printText("Brücke fährt herunter..");
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        printText("Brücke heruntergefahren.");
+                        if(s.nextLine().toLowerCase(Locale.GERMAN).contains("shuttle-tür öffnen")){
+                            printText("Shuttle-Tür geöffnet");
+                            if(s.nextLine().toLowerCase(Locale.GERMAN).contains("vakuum aktivieren")){
+                                printText("Vakuum aktiviert");
+                                if(s.nextLine().toLowerCase(Locale.GERMAN).contains("tor öffnen")){
+                                    printText("Tor geöffnet");
+                                    if(s.nextLine().toLowerCase(Locale.GERMAN).contains("start-schiene ausfahren")){
+                                        printText("Schiene wurde ausgefahren");
+                                        if(s.nextLine().toLowerCase(Locale.GERMAN).contains("shuttle starten")){
+                                            if(player.isDecision()) {
+                                                printText(" Olivia: „Vielen dank! Wenn ich eins tue dann halte ich mich an meine Versprechen.\n" +
+                                                        "Hier ist die Karte, auf ihr sind die Koordinaten zur Krankenstation markiert\n" +
+                                                        "und hier der code: 2205“\t\n" +
+                                                        "hasta luego!“\n" +
+                                                        "\n" +
+                                                        "Du siehst wie sie zum Schiff läuft, einsteigt und ab fliegt.\n" +
+                                                        "Dann gehst du zum Ausgang des Shuttle-Raums um dich auf dem Weg zur Krankenstation zu begeben... ...doch irgendwie hast du ein schlechtes Gefühl ihr geholfen zu haben.");
+                                            } else {
+                                                printText("Das Tor ist offen, dir kommen fasst die Tränen, als du die Erde durch das Tor siehst.\n" +
+                                                        "Alles ist startbereit, worauf wartest du?");
+                                                while (!s.nextLine().toLowerCase(Locale.GERMAN).contains("gehe"));
+                                                printText("Du bist jetzt im Shuttle und betätigst die richtigen Schalter um die Triebwerke zu zünden.\n" +
+                                                        "Der Flug zur Erde verging mühelos, du konntest in der Shuttle-Station in L.A.\n" +
+                                                        "landen, die Menschen dort waren ganz verwundert, sie erwarteten keinen Shuttle Flüge von der Talos-1, sie waren informiert, dass sich die Crew dort in Hyperschlaf befindet.\n" +
+                                                        "Sie haben auch nicht lange gezögert als du ihnen von dem was auf der Talos-1 passiert ist erzählt hast und haben sofort einen Shuttle zur Weltraumstation gestartet der voll gepackt mit Soldaten und Waffen war.\n" +
+                                                        "Es hat nicht lange gedauert bis sie die komplette Station von den Typhons gereinigt haben. Olivia Colomar haben sie auch gefunden und wieder in Gewahrsam gebracht,\n" +
+                                                        "diesmal noch sicherer. Und die Crew haben sie auch aus dem Hyperschlaf geweckt um sie über alles was hier geschehen ist und deinen Taten zu informieren.\n" +
+                                                        "Und du wurdest noch am gleichen Tag wie ein Held gefeiert bevor ihr wieder den Hyperschlaf betretenen habt.");
+                                                Main.game_over = true;
+                                            }
+                                            chapter_complete = true;
+                                        } else {
+                                            printText("Falsche Reihenfolge");
+                                        }
+                                    } else {
+                                        printText("Falsche Reihenfolge!");
+                                    }
+                                } else {
+                                    printText("Falsche Reihenfolge!");
+                                }
+                            } else {
+                                printText("Falsche Reihenfolge!");
+                            }
+                        } else {
+                            printText("Falsche Reihenfolge!");
+                        }
+                    }
+                }
+
+        } else if(chapter == 3){
+                printText("Du bist jetzt an der verschlossenen Tür der Krankenstation angekommen. Wie war der Code nochmal?");
+                boolean chapter_complete = false;
+                boolean code_entered = false;
+                while(!chapter_complete) {
+                    String input = s.nextLine().toLowerCase(Locale.GERMAN);
+                    if(input.contains("2205")){
+                        printText("Du gibst den Code ein. Die Tür öffnet sich. Du gehst in die Krankenstation.");
+                        code_entered = true;
+                    } else if(input.contains("umsehen") && code_entered){
+                        printText("Alles ist so weiß und sieht so steril aus, ist endlich mal was anderes, im Gegensatz zu den anderen Räumen, bis jetzt.\n" +
+                                "Und da steht er, der Operationstisch, in der Mitte des Raumes. Du weißt was zu tun ist.");
+                    } else if(input.contains("tisch") || input.contains("ein")){
+                        printText("Du schaltest ihn auf Hyperschlaf, nimmst die richtigen Schlaf-Dauer Einstellungen vor.\n" +
+                                "Und aktivierst es, während du dich grade selbst hineinlegst.\n" +
+                                "Du schläfst ein, mit den schönen Gedanken wieder in 2205 aufzuwachen und mit deinen Kollegen am neuen Projekt weiter zusammen arbeiten zu können und ihnen von deinem Abenteuer erzählen zu können... doch du bist niemals mehr wieder aufgewacht. \n" +
+                                "Dein selbstsüchtiges denken hat dich dazu geführt, nur noch daran zu denken, wieder in den Hyperschlaf zu gehen. Du hast alles dafür gemacht. Du hast sogar eine Meister Hackerin auf\n" +
+                                "die Erde losgelassen. Doch was ist mit den Typhon, hast du sie etwa vergessen.\n" +
+                                "Sie haben sich über die letzten 100 Jahre, in den du geschlafen hast, so stark vermehrt, dass sie irgendwann die Raumstation buchstäblich aufgefressen haben samt deinen Team Kollegen.\n" +
+                                "Du hattest die Chance es zu vermeiden, doch hattest die falschen Prioritäten...");
+                        Main.game_over = true;
+                    }
+                }
         }
     }
     void secret() {
@@ -419,22 +581,21 @@ public class Event {
     void passive(){
         printText("Du bist in einem scheinbar leeren Raum.");
         int chanceSafe = ThreadLocalRandom.current().nextInt(0,2);
-        if(safeID != null) {
             if (chanceSafe == 1) {
                 for (Safe safe : Main.safes) {
                     if (!safe.isCode_found()) {
                         safe.setCode_found(true);
-                        _passive(safe);
+                        printText("An der Wand befindet sich ein Zettel. Möchtest du diesen genauer anschauen?");
+                        String input = new Scanner(System.in).nextLine().toLowerCase(Locale.GERMAN);
+                        if (input.contains("ja")) {
+                            printText("Auf dem Zettel steht:\n\tSafe-ID: " + safe.getId() + "\n\tCode: " + safe.getCode());
+                        } else if (input.contains("nein")) {
+                            printText("Ok.");
+                        }
                         break;
                     }
                 }
             }
-        } else {
-            for (Safe safe : Main.safes){
-                _passive(safe);
-                break;
-            }
-        }
         int chance = ThreadLocalRandom.current().nextInt(0,100);
         if(chance == 99){
             printText("Seltsam. Was war das?");
@@ -445,16 +606,6 @@ public class Event {
             }
             player.setLuck(player.getLuck() * 3);
             printText("Dein Glück hat sich erhöht!");
-        }
-    }
-
-    void _passive(Safe safe){
-        printText("An der Wand befindet sich ein Zettel. Möchtest du diesen genauer anschauen?");
-        String input = new Scanner(System.in).nextLine().toLowerCase(Locale.GERMAN);
-        if (input.contains("ja")) {
-            printText("Auf dem Zettel steht:\n\tSafe-ID: " + safe.getId() + "\n\tCode: " + safe.getCode());
-        } else if (input.contains("nein")) {
-            printText("Ok.");
         }
     }
 

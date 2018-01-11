@@ -9,6 +9,7 @@ public class Player {
     private boolean weapon = false;
     private boolean armor = false;
     private int story_chapter;
+    private boolean decision;
 
     public int getPos_x() {
         return pos_x;
@@ -88,5 +89,13 @@ public class Player {
 
     public void setStory_chapter(int story_chapter) {
         this.story_chapter = story_chapter;
+    }
+
+    public boolean isDecision() {
+        return decision;
+    }
+
+    public void setDecision(boolean decision) {
+        this.decision = decision;
     }
 }

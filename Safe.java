@@ -8,6 +8,7 @@ public class Safe {
 
     Safe(){
         this.open = false;
+        this.generated = false;
         this.id = UUID.randomUUID().toString();
         this.code = ThreadLocalRandom.current().nextInt(10000,99999);
         this.money = ThreadLocalRandom.current().nextInt(0,10000);
