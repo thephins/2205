@@ -104,13 +104,31 @@ public class Main {
         while (!isMapOk())
             ini();
         Scanner s = new Scanner(System.in);
-        rooms[0][0].getEvent().execute();
-        while (!game_over){
+
+        if (false)
+            rooms[0][0].getEvent().execute();
+
+        while (!game_over)
+        {
+            int x, y;
+            String input;
             printRooms(player);
-            System.out.print("Wohin möchtest du gehen? ");
-            String input = s.nextLine().toLowerCase(Locale.GERMAN);
-            int x = player.getPos_x();
-            int y = player.getPos_y();
+
+            do {
+                System.out.print("Wohin möchtest du gehen? ");
+
+                input = s.nextLine().toLowerCase(Locale.GERMAN);
+                x = player.getPos_x();
+                y = player.getPos_y();
+
+                if (input.matches(Debug.DEBUG_PREFIX + ".*"))
+                {
+                    String err = Debug.resolve_debug(input.substring(4), player, rooms);
+                    if (err != null)
+                        System.out.println("DEBUG&" + err + ";");
+                }
+            } while (input.matches(Debug.DEBUG_PREFIX + ".*"));
+
             if(input.contains("links")){
                 if(check(x-1, y)) {
                     player.setPos_x(x - 1);
@@ -138,6 +156,7 @@ public class Main {
             } else {
                 System.out.println("Das habe ich nicht verstanden..");
             }
+
             rooms[player.getPos_x()][player.getPos_y()].getEvent().execute();
         }
     }
