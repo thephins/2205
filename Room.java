@@ -5,7 +5,6 @@ public class Room {
     private int type;
     private String name;
     private Event event;
-    private Player player;
     private String id;
 
     Room(int type, Player player){
@@ -15,8 +14,11 @@ public class Room {
         } else {
             name = "Tür";
         }
-        this.event = new Event(type, player);
         this.id = UUID.randomUUID().toString();
+        if(type == 1){
+            Main.safes.add(new Safe(id));
+        }
+        this.event = new Event(type, player, id);
     }
 
     public int getType() {

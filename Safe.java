@@ -1,19 +1,31 @@
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Safe {
-    private boolean open, code_found, generated;
-    private String id;
-    private int code, money, meds, oxygen;
+    private boolean open, generated;
+    private String id, codeRoomId;
+    private int code, money, meds, oxygen, publicID;
 
-    Safe(){
+    Safe(String id){
         this.open = false;
         this.generated = false;
-        this.id = UUID.randomUUID().toString();
-        this.code = ThreadLocalRandom.current().nextInt(10000,99999);
+        this.id = id;
+        this.code = ThreadLocalRandom.current().nextInt(10000,100000);
         this.money = ThreadLocalRandom.current().nextInt(0,10000);
-        this.meds = ThreadLocalRandom.current().nextInt(0,3);
+        this.meds = ThreadLocalRandom.current().nextInt(0,4);
         this.oxygen = ThreadLocalRandom.current().nextInt(0,3000);
+        boolean found = false;
+        do {
+            this.publicID = ThreadLocalRandom.current().nextInt(100, 1000);
+            if(!Main.safes.isEmpty()) {
+                for (Safe safe : Main.safes) {
+                    if (safe.getPublicID() != this.publicID) {
+                        found = true;
+                    }
+                }
+            } else {
+                found = true;
+            }
+        } while (!found);
     }
 
     public boolean isOpen() {
@@ -22,14 +34,6 @@ public class Safe {
 
     public void setOpen(boolean open) {
         this.open = open;
-    }
-
-    public boolean isCode_found() {
-        return code_found;
-    }
-
-    public void setCode_found(boolean code_found) {
-        this.code_found = code_found;
     }
 
     public boolean isGenerated() {
@@ -58,5 +62,17 @@ public class Safe {
 
     public int getOxygen() {
         return oxygen;
+    }
+
+    public String getCodeRoomId() {
+        return codeRoomId;
+    }
+
+    public void setCodeRoomId(String codeRoomId) {
+        this.codeRoomId = codeRoomId;
+    }
+
+    public int getPublicID() {
+        return publicID;
     }
 }

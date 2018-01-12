@@ -25,7 +25,6 @@ public class Main {
                     type = 0;
                 } else if(r <= 460){
                     type = 1;
-                    safes.add(new Safe());
                 } else if(r <= 660){
                     type = 2;
                 } else if(r <= 860){

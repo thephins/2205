@@ -9,12 +9,13 @@ public class Event {
     private int room_type;
     private Player player;
     private boolean executed;
-    private String safeID;
+    private String roomID;
 
-    Event(int room_type, Player player){
+    Event(int room_type, Player player, String roomID){
         this.isVoid = room_type == 0;
         this.room_type = room_type;
         this.player = player;
+        this.roomID = roomID;
     }
 
     public boolean getExecuted()
@@ -37,7 +38,7 @@ public class Event {
                     if(!executed) fight();
                     break;
                 case 3:
-                    if(!executed) passive();
+                    passive();
                     break;
                 case 4:
                     if(!executed) treasure();
@@ -63,8 +64,9 @@ public class Event {
             String key2 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
             String key3 = String.valueOf((char) ThreadLocalRandom.current().nextInt(97,123));
             System.out.print(key1 + " " + key2 + "" + key3);
-            correct = key1.equals(key2);
+            correct = key1.equals(key2) && key2.equals(key3);
         }
+        System.out.println();
     }
 
     void typhon(int n, int ms){
@@ -236,46 +238,31 @@ public class Event {
         }
     }
     void safe(){
-        if(safeID != null) {
-            for (Safe safe : Main.safes) {
-                if (!safe.isOpen() && !safe.isGenerated()) {
-                    safe.setGenerated(true);
-                    safeID = safe.getId();
-                    _safe(safe);
-                    break;
-                }
-            }
-        } else {
-            for(Safe safe : Main.safes){
-                if(safe.getId().equals(safeID)){
-                    _safe(safe);
-                }
-                break;
-            }
-        }
-    }
-
-    void _safe(Safe safe){
-        printText("Hier befindet sich ein Safe mit der ID \"" + safe.getId() + "\"\nMöchtest du einen Code eingeben?");
-        Scanner s = new Scanner(System.in);
-        String input = s.nextLine().toLowerCase(Locale.GERMAN);
-        if (input.contains("ja")) {
-            printText("Code: ", 30, false);
-            if (Integer.parseInt(s.nextLine()) == safe.getCode()) {
-                printText("Du hast den Safe geöffnet!");
-                printText("Du hast " + safe.getMoney() + "$, " + safe.getOxygen() + " an Sauerstoff und " + safe.getMeds() + " Medikament(e) gefunden.");
-                player.setMoney(player.getMoney() + safe.getMoney());
-                player.setOxygen(player.getOxygen() + safe.getOxygen());
-                player.setHealth(player.getHealth() + safe.getMeds() * 48);
-                if (player.getHealth() > 100) {
-                    player.setHealth(100);
-                }
+        for(Safe safe : Main.safes){
+            if(safe.getId().equals(roomID) && !safe.isOpen()){
                 safe.setOpen(true);
-            } else {
-                printText("Der Code ist leider falsch!");
+                printText("Hier befindet sich ein Safe mit der ID " + safe.getPublicID() + "\nMöchtest du einen Code eingeben?");
+                Scanner s = new Scanner(System.in);
+                String input = s.nextLine().toLowerCase(Locale.GERMAN);
+                if (input.contains("ja")) {
+                    printText("Code: ", 30, false);
+                    if (Integer.parseInt(s.nextLine()) == safe.getCode()) {
+                        printText("Du hast den Safe geöffnet!");
+                        printText("Du hast " + safe.getMoney() + "$, " + safe.getOxygen() + " an Sauerstoff und " + safe.getMeds() + " Medikament(e) gefunden.");
+                        player.setMoney(player.getMoney() + safe.getMoney());
+                        player.setOxygen(player.getOxygen() + safe.getOxygen());
+                        player.setHealth(player.getHealth() + safe.getMeds() * 48);
+                        if (player.getHealth() > 100) {
+                            player.setHealth(100);
+                        }
+                        safe.setOpen(true);
+                    } else {
+                        printText("Der Code ist leider falsch!");
+                    }
+                } else if (input.contains("nein")) {
+                    printText("Ok.");
+                }
             }
-        } else if (input.contains("nein")) {
-            printText("Ok.");
         }
     }
 
@@ -352,8 +339,9 @@ public class Event {
                     printText("Du entscheidest dich aus dem Hyperschlaf-Raum raus zugehen. Du öffnest die Tür und kannst deinen Augen nicht glauben. Alles verwüstet überall schwarze Spuren an den Wänden wie du sie eigentlich nur aus der Typhon Forschung kennst...sind die Typhon ausgebrochen? Auf einem Informations-Bildschirm erkennst du das es ebenfalls das überall   \n" +
                             "auf der Talos-1 Sauerstoff Lecks gibt du ziehst dir einen Raumanzug an dessen Sauerstoff-Versorgung noch 75% beträgt. Ebenfalls nimmst du vorerst als temporäre Bewaffnung eine Rohrzange die auf dem Boden zwischen den Trümmern herum lag.\n" +
                             "Der Raumanzug gibt ebenfalls Informationen über deinen Gesundheitlichen Status aus:\n" +
-                            "Gesundheit = 100% | Krankheiten = Keine\n\n" +
-                            "Schwarze Flächen an der Wand, alles zertrümmert, Sauerstoff Lecks. Hier ist nicht wirklich von Interesse für dich, das einzige was dir Sorgen macht sind diese Schwarzen Flecken.\n" +
+                            "Gesundheit = 100% | Krankheiten = Keine\n\n");
+                    cls();
+                    printText("Schwarze Flächen an der Wand, alles zertrümmert, Sauerstoff Lecks. Hier ist nicht wirklich von Interesse für dich, das einzige was dir Sorgen macht sind diese Schwarzen Flecken.\n" +
                             "Diese Flecken sehen dem Gewebe der Typhons sehr ähnlich. Überall wo die Typhen hingehen hinterlassen sie so welche Flecken. Es macht dir Sorgen das sie hier im zerstörten Raum auch aufgetaucht sind.\n" +
                             "Die Typhons sind tatsächlich ausgebrochen. Hinter dir und im ganzen Raum schließen sich die Türen wegen einer Warnmeldung, die Technologie auf der Raumstation scheint auch schon beschädigt zu sein.");
                     chapter_complete = true;
@@ -570,22 +558,29 @@ public class Event {
     }
     void passive(){
         printText("Du bist in einem scheinbar leeren Raum.");
-        int chanceSafe = ThreadLocalRandom.current().nextInt(0,2);
-            if (chanceSafe == 1) {
-                for (Safe safe : Main.safes) {
-                    if (!safe.isCode_found()) {
-                        safe.setCode_found(true);
-                        printText("An der Wand befindet sich ein Zettel. Möchtest du diesen genauer anschauen?");
-                        String input = new Scanner(System.in).nextLine().toLowerCase(Locale.GERMAN);
-                        if (input.contains("ja")) {
-                            printText("Auf dem Zettel steht:\n\tSafe-ID: " + safe.getId() + "\n\tCode: " + safe.getCode());
-                        } else if (input.contains("nein")) {
-                            printText("Ok.");
-                        }
-                        break;
-                    }
+        for (Safe safe : Main.safes) {
+            if (safe.isGenerated() && safe.getCodeRoomId().equals(roomID)) {
+                printText("Möchtest du den Zettel nochmal genauer anschauen?");
+                String input = new Scanner(System.in).nextLine().toLowerCase(Locale.GERMAN);
+                if (input.contains("ja")) {
+                    printText("Auf dem Zettel steht:\n\tSafe-ID: " + safe.getPublicID() + "\n\tCode: " + safe.getCode());
+                } else if (input.contains("nein")) {
+                    printText("Ok.");
                 }
+                break;
+            } else if(!safe.isGenerated() && !safe.isOpen()) {
+                printText("An der Wand befindet sich ein Zettel. Möchtest du diesen genauer anschauen?");
+                String input = new Scanner(System.in).nextLine().toLowerCase(Locale.GERMAN);
+                if (input.contains("ja")) {
+                    printText("Auf dem Zettel steht:\n\tSafe-ID: " + safe.getPublicID() + "\n\tCode: " + safe.getCode());
+                } else if (input.contains("nein")) {
+                    printText("Ok.");
+                }
+                safe.setGenerated(true);
+                safe.setCodeRoomId(roomID);
+                break;
             }
+        }
         int chance = ThreadLocalRandom.current().nextInt(0,100);
         if(chance == 99){
             printText("Seltsam. Was war das?");
@@ -600,6 +595,9 @@ public class Event {
     }
 
     public static void cls(){
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e) {}
         for (int i = 0; i < 50; ++i) System.out.println();
     }
     public static void printText(String s){
