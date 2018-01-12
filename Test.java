@@ -3,7 +3,7 @@ import java.util.Scanner;
 
 public class Test {
     public static void main(String[] args){
-        String str = "Ã¤Ã¤Ã¶ --";
+        String str = "ääö --";
         Scanner s = new Scanner(System.in);
         String input = s.nextLine();
         System.out.println("input: " + input);
@@ -12,3 +12,4 @@ public class Test {
         System.out.println("boolean: " + input.contains(str));
     }
 }
+

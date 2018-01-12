@@ -145,7 +145,7 @@ public class Event {
             printText("Hier befindet sich ein Typhon mit Waffe. Möchtest du fliehen oder kämpfen?");
             Scanner s = new Scanner(System.in);
             String input = s.nextLine().toLowerCase(Locale.GERMAN);
-            if(input.contains("kämpfen")){
+            if(input.matches("\\s*k.mpfen\\s*")){
                 int chances = ThreadLocalRandom.current().nextInt(0,5) + (player.isWeapon() ? 30 : 0) + (player.getLuck() / 2) + (player.isArmor() ? 10 : 0) + player.getHealth() / 4;
                 if(chances >= 75){
                     printText("Deine Chancen standen gut. Du konntest den Typhon erfolgreich eliminieren.");
@@ -214,14 +214,14 @@ public class Event {
                 } else {
                     printText("Du hast schon eine Waffe!");
                 }
-            } else if(input.contains("glück")){
+            } else if(input.matches("\\s*gl.ck\\s*")){
                 if(player.getMoney() >= 800){
                     player.setMoney(player.getMoney() - 800);
                     player.setLuck(player.getLuck() + 25);
                 } else {
                     printText(nem);
                 }
-            } else if(input.contains("rüstung")){
+            } else if(input.contains("\\s*r.stung\\s*")){
                 if(!player.isArmor()) {
                     if (player.getMoney() >= 1000) {
                         player.setMoney(player.getMoney() - 1000);
@@ -374,7 +374,7 @@ public class Event {
                             printText("Anhand der Uniform lässt sich erkennen das sie zu den Volontären auf der Talos-1 gehört.\n" +
                                     "Sie scheint ansprechbar zu sein und anhand eines Terminals und ihrer Volontär ID, \n" +
                                     "die auf ihrem Anzug erkennbar ist, ist es möglich mehr über sie heraus zu finden.");
-                        } else if(input_room.contains("volontär")){
+                        } else if(input_room.matches("\\s*volont.r\\s*")){
                             printText("Volontäre, sind Freiwillige die ihren Körper für die Versuche und Experimente auf der Talos-1 zur Verfügung gestellt haben, ...also so etwas wie Laborratten.\n" +
                                     "Meistens handelt es sich um Strafgefangene die ihr Leben sowieso lebenslänglich im Gefängnis verbracht hätten.");
                         } else if(input_room.contains("id") || input_room.contains("genau")){
@@ -458,7 +458,7 @@ public class Event {
                                 "\t 4. Tor öffnen\n" +
                                 "\t 5. Start-Schiene ausfahren\n" +
                                 "\t 6. Shuttle Starten\"");
-                    } else if(input.contains("schaltfläche")){
+                    } else if(input.matches("\\s*schaltfl.che\\s*")){
                         printText("auf dem „Looking-Glass“ der Schaltfläche steht:\n" +
                                 "\tKonsole: \"Bitte geben sie den Namen des Shuttle's ein das sie anwählen möchten.\"");
                     } else if(input.contains("advent")){
@@ -471,7 +471,7 @@ public class Event {
                                 "\t[Tor öffnen]\n" +
                                 "\t[Shuttle-Tür öffnen]\n" +
                                 "\t[Shuttle Starten]");
-                    } else if(input.contains("brücke herunterfahren") && cmd_active){
+                    } else if(input.matches("\\s*br.cke herunterfahren\\s*") && cmd_active){
                         printText("Brücke fährt herunter..");
                         try {
                             Thread.sleep(5000);
@@ -479,11 +479,11 @@ public class Event {
                             e.printStackTrace();
                         }
                         printText("Brücke heruntergefahren.");
-                        if(s.nextLine().toLowerCase(Locale.GERMAN).contains("shuttle-tür öffnen")){
+                        if(s.nextLine().toLowerCase(Locale.GERMAN).matches("\\s*shuttle-t.r .ffnen\\s*")){
                             printText("Shuttle-Tür geöffnet");
                             if(s.nextLine().toLowerCase(Locale.GERMAN).contains("vakuum aktivieren")){
                                 printText("Vakuum aktiviert");
-                                if(s.nextLine().toLowerCase(Locale.GERMAN).contains("tor öffnen")){
+                                if(s.nextLine().toLowerCase(Locale.GERMAN).matches("\\s*tor .ffnen\\s*")){
                                     printText("Tor geöffnet");
                                     if(s.nextLine().toLowerCase(Locale.GERMAN).contains("start-schiene ausfahren")){
                                         printText("Schiene wurde ausgefahren");

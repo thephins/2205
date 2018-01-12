@@ -170,7 +170,7 @@ public class Main {
                 } else {
                     movementError();
                 }
-            } else if(input.contains("hinter") || input.contains("zurück")){
+            } else if(input.contains("hinter") || input.matches("\\s*zur.ck\\s*")){
                 if(check(x, y-1)) {
                     player.setPos_y(y - 1);
                 } else {
