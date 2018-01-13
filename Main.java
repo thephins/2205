@@ -51,7 +51,7 @@ public class Main {
                     if (topPos != botPos)
                         if (Math.abs(srooms[topPos][0] - srooms[botPos][0]) +
                             Math.abs(srooms[topPos][1] - srooms[botPos][1]) <
-                            (storyRoomCount * 3) / (width * (height / width)))
+                            (storyRoomCount * 4) / (width * (height / width)))
                         {
                             bRunning = true;
                             break BEXIT;
@@ -69,40 +69,74 @@ public class Main {
 
         // FOR DIFFERENT OCCURRENCY CHANGE THE LAST NUMBER
         int secretRoomCount = (width * height) / 100;
-        int[][] crooms = new int[secretRoomCount][2];
-        bRunning = true;
-        while (bRunning)
-        {
-            for (int i = 0; i < secretRoomCount; ++i)
-            {
-                crooms[i][0] = random.nextInt(width);
-                crooms[i][1] = random.nextInt(height);
+        int keyRoomCount = storyRoomCount;
 
-                if (rooms[ crooms[i][0] ][ crooms[i][1] ] != null)
-                {
-                    --i;
-                }
+        /*
+
+        0 == SECRECT ROOM GEN
+        1 == KEY ROOM GEN
+
+         */
+        for (int rco = 0; rco < 2; ++rco)
+        {
+            int[][] crooms;
+            int thisRoomCount;
+
+            if (rco == 0)
+            {
+                crooms = new int[secretRoomCount][2];
+                thisRoomCount = secretRoomCount;
+            }
+            else // if (rco == 1)
+            {
+                crooms = new int[keyRoomCount][2];
+                thisRoomCount = storyRoomCount;
             }
 
-            bRunning = false;
-        BEXIT:
-            for (int topPos = 0; topPos < crooms.length; ++topPos)
-                for (int botPos = 0; botPos < crooms.length; ++botPos)
+            bRunning = true;
+            while (bRunning)
+            {
+                for (int i = 0; i < thisRoomCount; ++i)
                 {
-                    if (topPos != botPos)
-                        if (Math.abs(crooms[topPos][0] - crooms[botPos][0]) +
-                            Math.abs(crooms[topPos][1] - crooms[botPos][1]) <
-                                (secretRoomCount * 4) / (width * (height / width)))
-                        {
-                            bRunning = true;
-                            break BEXIT;
-                        }
-                }
-        }
+                    crooms[i][0] = random.nextInt(width);
+                    crooms[i][1] = random.nextInt(height);
 
-        for (int[] secretRoom : crooms)
-        {
-            rooms[ secretRoom[0] ][ secretRoom[1] ] = new Room(7, player);
+                    if (rooms[crooms[i][0]][crooms[i][1]] != null)
+                    {
+                        --i;
+                    }
+                }
+
+                bRunning = false;
+                BEXIT:
+                for (int topPos = 0; topPos < crooms.length; ++topPos)
+                    for (int botPos = 0; botPos < crooms.length; ++botPos)
+                    {
+                        if (topPos != botPos)
+                            if (Math.abs(crooms[topPos][0] - crooms[botPos][0]) +
+                                    Math.abs(crooms[topPos][1] - crooms[botPos][1]) <
+                                    (thisRoomCount * 3) / (width * (height / width)))
+                            {
+                                bRunning = true;
+                                break BEXIT;
+                            }
+                    }
+            }
+
+            if (rco == 0)
+            {
+                for (int[] secretRoom : crooms)
+                {
+                    rooms[secretRoom[0]][secretRoom[1]] = new Room(7, player);
+                }
+            }
+            else if (rco == 1)
+            {
+                for (int[] keyRoom : crooms)
+                {
+                    rooms[keyRoom[0]][keyRoom[1]] = new Room(8, player);
+                }
+            }
         }
 
         ///////////////////////////////////////////// Rest
@@ -125,6 +159,7 @@ public class Main {
          5 = story
          6 = shop
          7 = secret
+         8 = KeyRoom
 
          */
 
@@ -241,7 +276,9 @@ public class Main {
                 s = "Nur eine normale Wand.";
                 break;
         }
+
         Event.printText(s);
+        player.setHealth( player.getHealth() - 5 );
     }
 
     private Main(){
