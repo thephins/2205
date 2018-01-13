@@ -2,6 +2,7 @@ import java.awt.image.AreaAveragingScaleFilter;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 
 // Test
 
@@ -132,9 +133,9 @@ public class Main {
         int[][] possibilities =
         {
             {300, 0}, // WALL
-            {150, 1}, // SAFE
-            {200, 2}, // FIGHT
-            {250, 3}, // PASSIVE
+            {100, 1}, // SAFE
+            {150, 2}, // FIGHT
+            {350, 3}, // PASSIVE
             {60,  4}, // TREASURE
             {40,  6}, // SHOP
         };
