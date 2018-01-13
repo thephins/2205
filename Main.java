@@ -2,7 +2,6 @@ import java.awt.image.AreaAveragingScaleFilter;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 
 // Test
 
